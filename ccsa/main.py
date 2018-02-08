@@ -1,4 +1,4 @@
-import Initialization
+import initialization
 from keras.layers import Activation, Dropout, Dense
 from keras.layers import Input, Lambda
 from keras.models import Model
@@ -14,10 +14,9 @@ sample_per_class = 1
 # We run the experiments for repetition=0,...,9 and take the average
 repetition = 2
 
-
 # Creating embedding function. This corresponds to the function g in the paper.
 # You may need to change the network parameters.
-model1=Initialization.Create_Model()
+model1=initialization.Create_Model()
 
 # size of digits 16*16
 img_rows, img_cols = 16, 16
@@ -43,23 +42,21 @@ out1 = Dense(nb_classes)(out1)
 out1 = Activation('softmax', name='classification')(out1)
 
 
-distance = Lambda(Initialization.euclidean_distance, output_shape=Initialization.eucl_dist_output_shape, name='CSA')(
+distance = Lambda(initialization.euclidean_distance, output_shape=initialization.eucl_dist_output_shape, name='CSA')(
     [processed_a, processed_b])
 model = Model(inputs=[input_a, input_b], outputs=[out1, distance])
-model.compile(loss={'classification': 'categorical_crossentropy', 'CSA': Initialization.contrastive_loss},
+model.compile(loss={'classification': 'categorical_crossentropy', 'CSA': initialization.contrastive_loss},
               optimizer='adadelta',
               loss_weights={'classification': 1 - alpha, 'CSA': alpha})
-
-
 
 
 print('Domain Adaptation Task: ' + domain_adaptation_task)
 # let's create the positive and negative pairs using row data.
 # pairs will be saved in ./pairs directory
-sample_per_class=1
+
 for repetition in range(10):
-    Initialization.Create_Pairs(domain_adaptation_task,repetition,sample_per_class)
-    Acc=Initialization.training_the_model(model,domain_adaptation_task,repetition,sample_per_class)
+    initialization.Create_Pairs(domain_adaptation_task, repetition, sample_per_class)
+    Acc=initialization.training_the_model(model, domain_adaptation_task, repetition, sample_per_class)
 
     print('Best accuracy for {} target sample per class and repetition {} is {}.'.format(sample_per_class,repetition,Acc ))
 

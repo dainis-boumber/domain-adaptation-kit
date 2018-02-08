@@ -1,16 +1,64 @@
 import random
 import os
-
+import numpy as np
+import sys
+from utils import ds_loader
+from sklearn.utils import resample
 from keras.utils import np_utils
 from keras.models import Sequential, Model
 from keras.layers import Input, Lambda, Convolution2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
-from keras.optimizers import SGD, RMSprop, Adam, Adadelta, Nadam
 from keras import backend as K
-import numpy   as np
-import sys
 
 
+
+def Create_Pairs(domain_adaptation_task):
+    Xsrc, ysrc, Xtgt, ytgt = ds_loader.get_data(domain_adaptation_task)
+    subsamples = ds_loader.subsample(Xsrc, ysrc, Xtgt, ytgt, subsample_sz=0.5, n_subsamples=1)
+
+
+    Training_P=[]
+    Training_N=[]
+
+    for trs in range(len(ysrc)):
+        for trt in range(len(ytgt)):
+            if ysrc[trs]==ytgt[trt]:
+                Training_P.append([trs,trt])
+            else:
+                Training_N.append([trs,trt])
+
+    random.shuffle(Training_N)
+    Training = Training_P+Training_N[:3*len(Training_P)]
+    random.shuffle(Training)
+
+    X1=np.zeros([len(Training),16,16],dtype='float32')
+    X2=np.zeros([len(Training),16,16],dtype='float32')
+
+    y1=np.zeros([len(Training)])
+    y2=np.zeros([len(Training)])
+    yc=np.zeros([len(Training)])
+    # TODO: modify following code:
+    '''
+    for i in range(len(Training)):
+        in1,in2=Training[i]
+        X1[i,:,:]=X_train_source[in1,:,:]
+        X2[i,:,:]=X_train_target[in2,:,:]
+
+        y1[i]=y_train_source[in1]
+        y2[i]=y_train_target[in2]
+        if y_train_source[in1]==y_train_target[in2]:
+            yc[i]=1
+    
+    if not os.path.exists('./pairs'):
+        os.makedirs('./pairs')
+
+    np.save('./pairs/' + UM + '_X1_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', X1)
+    np.save('./pairs/' + UM + '_X2_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', X2)
+
+    np.save('./pairs/' + UM + '_y1_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', y1)
+    np.save('./pairs/' + UM + '_y2_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', y2)
+    np.save('./pairs/' + UM + '_yc_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', yc)
+    '''
 def printn(string):
     sys.stdout.write(string)
     sys.stdout.flush()
@@ -32,8 +80,7 @@ def Create_Pairs(domain_adaptation_task,repetition,sample_per_class):
     if SpC <1 or SpC>7:
             raise Exception('number of sample_per_class should be between 1 and 7.')
 
-
-    print 'Creating pairs for repetition: '+str(cc)+' and sample_per_class: '+str(sample_per_class)
+    print ('Creating pairs for repetition: '+str(cc)+' and sample_per_class: '+str(sample_per_class))
 
     X_train_target=np.load('./row_data/' + UM + '_X_train_target_repetition_' + str(cc) + '_sample_per_class_' + str(SpC) + '.npy')
     y_train_target=np.load('./row_data/' + UM + '_y_train_target_repetition_' + str(cc) + '_sample_per_class_' + str(SpC) + '.npy')
@@ -41,10 +88,8 @@ def Create_Pairs(domain_adaptation_task,repetition,sample_per_class):
     X_train_source=np.load('./row_data/' + UM + '_X_train_source_repetition_' + str(cc) + '_sample_per_class_' + str(SpC) + '.npy')
     y_train_source=np.load('./row_data/' + UM + '_y_train_source_repetition_' + str(cc) + '_sample_per_class_' + str(SpC) + '.npy')
 
-
     Training_P=[]
     Training_N=[]
-
 
     for trs in range(len(y_train_source)):
         for trt in range(len(y_train_target)):
@@ -53,11 +98,9 @@ def Create_Pairs(domain_adaptation_task,repetition,sample_per_class):
             else:
                 Training_N.append([trs,trt])
 
-
     random.shuffle(Training_N)
     Training = Training_P+Training_N[:3*len(Training_P)]
     random.shuffle(Training)
-
 
     X1=np.zeros([len(Training),16,16],dtype='float32')
     X2=np.zeros([len(Training),16,16],dtype='float32')
@@ -87,8 +130,6 @@ def Create_Pairs(domain_adaptation_task,repetition,sample_per_class):
     np.save('./pairs/' + UM + '_yc_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy', yc)
 
 
-
-
 def Create_Model():
 
     img_rows, img_cols = 16, 16
@@ -115,12 +156,10 @@ def Create_Model():
     return model
 
 
-
 def euclidean_distance(vects):
     eps = 1e-08
     x, y = vects
     return K.sqrt(K.maximum(K.sum(K.square(x - y), axis=1, keepdims=True), eps))
-
 
 
 def eucl_dist_output_shape(shapes):
@@ -158,7 +197,6 @@ def training_the_model(model,domain_adaptation_task,repetition,sample_per_class)
     X_test = X_test.reshape(X_test.shape[0], 16, 16, 1)
     y_test = np_utils.to_categorical(y_test, nb_classes)
 
-
     X1 = np.load('./pairs/' + UM + '_X1_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy')
     X2 = np.load('./pairs/' + UM + '_X2_count_' + str(cc) + '_SpC_' + str(SpC) + '.npy')
 
@@ -172,13 +210,14 @@ def training_the_model(model,domain_adaptation_task,repetition,sample_per_class)
     y1 = np_utils.to_categorical(y1, nb_classes)
     y2 = np_utils.to_categorical(y2, nb_classes)
 
-    print 'Training the model - Epoch '+str(epoch)
+    print('Training the model - Epoch '+str(epoch))
     nn=batch_size
     best_Acc = 0
+
     for e in range(epoch):
         if e % 10 == 0:
             printn(str(e) + '->')
-        for i in range(len(y2) / nn):
+        for i in range(len(y2) // nn):
             loss = model.train_on_batch([X1[i * nn:(i + 1) * nn, :, :, :], X2[i * nn:(i + 1) * nn, :, :, :]],
                                         [y1[i * nn:(i + 1) * nn, :], yc[i * nn:(i + 1) * nn, ]])
             loss = model.train_on_batch([X2[i * nn:(i + 1) * nn, :, :, :], X1[i * nn:(i + 1) * nn, :, :, :]],
@@ -190,5 +229,6 @@ def training_the_model(model,domain_adaptation_task,repetition,sample_per_class)
 
         if best_Acc < Acc:
             best_Acc = Acc
-    print str(e)
+
     return best_Acc
+

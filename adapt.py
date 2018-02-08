@@ -2,6 +2,7 @@ import numpy as np
 from utils import ds_loader
 from jdot.jdot_nn import JDOT_NN
 
+
 def adapt(clf, dataset='mars', verbose=False):
     acc_list = []
     X_src, y_src, X_tgt, y_tgt = ds_loader.get_data(dataset)
