@@ -11,7 +11,7 @@ def adapt(clf, dataset='mars', verbose=False):
         # subsample = (X_src, y_src, X_tgt, y_tgt)
         X_src, y_src, X_tgt, y_tgt = subsample
         if clf is 'JDOT_NN':
-            clf = JDOT_NN(X_src.shape[1], 7)
+            clf = JDOT_NN(X_src.shape[1], 2)
         clf.fit(X_src, y_src, X_tgt)
         _, acc = clf.predict(X_tgt, y=y_tgt)
         acc_list.append(acc)
@@ -23,7 +23,8 @@ def adapt(clf, dataset='mars', verbose=False):
 def main():
     # adapt(LooRLS(), verbose=True)
     # adapt(JDOT_SVM(), verbose=True)
-    adapt('JDOT_NN', 'mars', verbose=True)
+    # adapt('JDOT_NN', 'supernova', verbose=True)
+    pass
 
 
 if __name__=="__main__":

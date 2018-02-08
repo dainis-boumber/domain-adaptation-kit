@@ -2,6 +2,8 @@
 
 # CCSA: "Unified Deep Supervised Domain Adaptation and Generalization" (ICCV 2017)
 
+TODO: Integrate with the rest of the API
+
 ## Requiremenrts
 keras and numpy
 
