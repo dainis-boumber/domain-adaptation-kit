@@ -1,7 +1,5 @@
-# loorls-da
+# domain-adaptation-kit
 
 Author: Dainis Boumber
 
-Very simple domain adaptation using leaving one one loss and RLS
-# domain-adaptation-kit
-# domain-adaptation-kit
+TODO: Create reasonable documentation
