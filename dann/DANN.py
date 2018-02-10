@@ -3,11 +3,11 @@ import time
 import data_helper
 import tensorflow as tf
 import numpy as np
-from dann.utils import weight_variable
-from dann.utils import bias_variable
-from dann.utils import batch_generator
+from dann.dann_utils import weight_variable
+from dann.dann_utils import bias_variable
+from dann.dann_utils import batch_generator
 from flip_gradient import flip_gradient
-
+from utils import ds_loader
 
 def build_model(n_features, n_classes, batch_size, shallow_domain_classifier=True, n_domains=2):
     X = tf.placeholder(tf.float32, [None, n_features], name='X')  # Input data
@@ -154,17 +154,14 @@ def train_and_evaluate(op, X_src, y_src, X_tgt, y_tgt, grad_scale=None, batch_si
 
 
 def main():
-    if len(sys.argv) == 1:
-        Xs, ys = data_helper.get_data('supernova-src')
-        Xt, yt = data_helper.get_data('supernova-tgt')
-    else:
-        Xs, ys = data_helper.get_data(sys.argv[1])
-        Xt, yt = data_helper.get_data(sys.argv[2])
+    datasets = ('mars', 'supernova')
 
-    train_and_evaluate(op='Domain Classification', X_src=Xs, y_src=ys, X_tgt=Xt, y_tgt=yt, grad_scale=-1.0)
-    train_and_evaluate(op='Label Classification', X_src=Xs, y_src=ys, X_tgt=Xt, y_tgt=yt)
-    train_and_evaluate(op='Domain Adaptation', X_src=Xs, y_src=ys, X_tgt=Xt, y_tgt=yt)
-    train_and_evaluate(op='Deep Domain Adaptation', X_src=Xs, y_src=ys, X_tgt=Xt, y_tgt=yt)
+    for ds in datasets:
+        subsamples = ds_loader.get_data(ds)
+        for ss in subsamples:
+            X_src, y_src, X_tgt_known, y_tgt_known, X_tgt_unknown, y_tgt_unknown = ss
+            train_and_evaluate(op='Domain Adaptation', X_src=X_src, y_src=y_src, X_tgt=X_tgt_unknown, y_tgt=y_tgt_unknown)
+            train_and_evaluate(op='Deep Domain Adaptation', X_src=X_src, y_src=y_src, X_tgt=X_tgt_unknown, y_tgt=y_tgt_unknown)
 
 
 if __name__ == '__main__':

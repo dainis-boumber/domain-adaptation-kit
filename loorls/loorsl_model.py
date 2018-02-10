@@ -13,7 +13,7 @@ class LooRLS(object):
         self.y_src = None
         self.measure = None
 
-    def fit(self, X_src, y_src, X_tgt, verbose=False):
+    def fit(self, X_src, y_src, X_tgt_known, y_tgt_known, X_tgt_unknown, y_tgt_unknown, verbose=False):
         # Map labels from set {1,2,3} to one-vs-all encoding
 
         if np.count_nonzero(y_src) >= len(y_src):
@@ -30,7 +30,7 @@ class LooRLS(object):
             self.measure = accuracy
 
         self.learner = LeaveOneOutRLS(X_src, y_src, regparams=regparams, measure=self.measure)
-        p_tgt = self.learner.predict(X_tgt)
+        p_tgt = self.learner.predict(X_tgt_known)
         # ova_accuracy computes one-vs-all classification accuracy directly between transformed
         # class label matrix, and a matrix of predictions, where each column corresponds to a class
         self.learner = RLS(X_src, y_src)

@@ -11,11 +11,9 @@ from keras.layers import Activation, Dropout, Flatten, Dense
 from keras import backend as K
 
 
-
 def Create_Pairs(domain_adaptation_task):
     Xsrc, ysrc, Xtgt, ytgt = ds_loader.get_data(domain_adaptation_task)
     subsamples = ds_loader.subsample(Xsrc, ysrc, Xtgt, ytgt, subsample_sz=0.5, n_subsamples=1)
-
 
     Training_P=[]
     Training_N=[]
