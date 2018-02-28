@@ -1,5 +1,12 @@
-# domain-adaptation-kit
+# Domain Adaptation Kit
+<hr>
 
-Author: Dainis Boumber
+Authors: Dainis Boumber and Michael M.Meskhi
 
-TODO: Create reasonable documentation
+**Table of contents:**
+
+- What is Domain Adaptation?
+- What is in this kit?
+- How to use
+- How to configure
+- TODO LIST
